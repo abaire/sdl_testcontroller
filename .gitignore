@@ -1,0 +1,26 @@
+*.cpp.d
+*.c.d
+*.obj
+*.iso
+*.lib
+*.exe
+*.xbe
+*.pdb
+*.inl
+*.vshinc
+
+.DS_Store
+.vscode/
+bin/
+
+# Local runtime config to bundle.
+resources/nxdk_pgraph_tests_config.json
+
+# CLion ####
+
+.idea/
+
+build/
+cmake-build*/
+
+# /CLion ####
