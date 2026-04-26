@@ -1,0 +1,138 @@
+name: Build and Package
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+  
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            git \
+            cmake \
+            ninja-build \
+            libasound2-dev \
+            libpulse-dev \
+            libaudio-dev \
+            libfribidi-dev \
+            libjack-dev \
+            libsndio-dev \
+            libx11-dev \
+            libxext-dev \
+            libxrandr-dev \
+            libxcursor-dev \
+            libxfixes-dev \
+            libxi-dev \
+            libxss-dev \
+            libxtst-dev \
+            libxkbcommon-dev \
+            libdrm-dev \
+            libgbm-dev \
+            libgl1-mesa-dev \
+            libgles2-mesa-dev \
+            libegl1-mesa-dev \
+            libdbus-1-dev \
+            libibus-1.0-dev \
+            libudev-dev \
+            libthai-dev \
+            libpipewire-0.3-dev \
+            libwayland-dev \
+            libwayland-egl1 \
+            libdecor-0-dev \
+            liburing-dev
+
+      - name: Install Dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew install ninja
+
+      - name: Install Dependencies (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          choco install ninja
+
+      - name: Configure CMake
+        run: |
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DSDL_SHARED=ON \
+            -DSDL_STATIC=OFF \
+            -DSDL_TEST_LIBRARY=ON
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Install
+        run: cmake --install build --prefix dist
+
+      - name: Bundle SDL3 (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          cp build/_deps/sdl3-build/SDL3.dll dist/bin/
+
+      - name: Bundle SDL3 (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          cp build/_deps/sdl3-build/libSDL3.so* dist/bin/
+
+      - name: Package (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          cd dist
+          7z a ../sdl_testcontroller-windows.zip bin/*
+
+      - name: Package (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          cd dist
+          tar -czf ../sdl_testcontroller-linux.tar.gz bin/*
+
+      - name: Package (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          # Create Frameworks directory and copy SDL3
+          mkdir -p dist/testcontroller.app/Contents/Frameworks
+          cp build/_deps/sdl3-build/libSDL3.0.dylib dist/testcontroller.app/Contents/Frameworks/
+          ln -sf libSDL3.0.dylib dist/testcontroller.app/Contents/Frameworks/libSDL3.dylib
+          
+          # Fix RPATH to look in the bundle's Frameworks directory
+          install_name_tool -add_rpath "@executable_path/../Frameworks" dist/testcontroller.app/Contents/MacOS/testcontroller
+          
+          # Ad-hoc sign the bundle to prevent "damaged" warnings
+          codesign --force --deep --sign - dist/testcontroller.app
+          
+          cd dist
+          zip -ry ../sdl_testcontroller-macos.zip testcontroller.app
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sdl_testcontroller-${{ matrix.os }}
+          path: |
+            *.zip
+            *.tar.gz
