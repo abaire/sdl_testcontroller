@@ -89,3 +89,42 @@ install(TARGETS testcontroller
     RUNTIME DESTINATION bin
     BUNDLE  DESTINATION .
 )
+
+
+# ---------------------------------------------------------------------------
+# testcontroller executable
+# ---------------------------------------------------------------------------
+add_executable(testcontroller_nojoy
+        src/testcontroller_nojoy.c
+        src/gamepadutils.c
+        src/testutils.c
+)
+
+target_include_directories(testcontroller_nojoy PRIVATE
+        src
+)
+
+target_link_libraries(testcontroller_nojoy PRIVATE
+        ${SDL3_TEST_LIB}
+        ${SDL3_LIB}
+)
+
+# SDL_MAIN_USE_CALLBACKS replaces main(); SDL_main.h provides the platform
+# entry point.  On Apple platforms we still need an app-bundle wrapper so
+# SDL_main.h can do its work.
+if(APPLE)
+    set_target_properties(testcontroller_nojoy PROPERTIES
+            MACOSX_BUNDLE TRUE
+            MACOSX_BUNDLE_GUI_IDENTIFIER "org.libsdl.testcontroller_nojoy"
+            MACOSX_BUNDLE_BUNDLE_VERSION "1.0"
+            MACOSX_BUNDLE_SHORT_VERSION_STRING "1.0"
+    )
+endif()
+
+# ---------------------------------------------------------------------------
+# Install
+# ---------------------------------------------------------------------------
+install(TARGETS testcontroller_nojoy
+        RUNTIME DESTINATION bin
+        BUNDLE  DESTINATION .
+)
