@@ -118,7 +118,7 @@ jobs:
       - name: Package (macOS)
         if: runner.os == 'macOS'
         run: |
-          # Create Frameworks directory and copy SDL3
+          # Create Frameworks directory and copy SDL3 for testcontroller
           mkdir -p dist/testcontroller.app/Contents/Frameworks
           cp build/_deps/sdl3-build/libSDL3.0.dylib dist/testcontroller.app/Contents/Frameworks/
           ln -sf libSDL3.0.dylib dist/testcontroller.app/Contents/Frameworks/libSDL3.dylib
@@ -129,8 +129,19 @@ jobs:
           # Ad-hoc sign the bundle to prevent "damaged" warnings
           codesign --force --deep --sign - dist/testcontroller.app
           
+          # Create Frameworks directory and copy SDL3 for testcontroller_nojoy
+          mkdir -p dist/testcontroller_nojoy.app/Contents/Frameworks
+          cp build/_deps/sdl3-build/libSDL3.0.dylib dist/testcontroller_nojoy.app/Contents/Frameworks/
+          ln -sf libSDL3.0.dylib dist/testcontroller_nojoy.app/Contents/Frameworks/libSDL3.dylib
+          
+          # Fix RPATH to look in the bundle's Frameworks directory
+          install_name_tool -add_rpath "@executable_path/../Frameworks" dist/testcontroller_nojoy.app/Contents/MacOS/testcontroller_nojoy
+          
+          # Ad-hoc sign the bundle to prevent "damaged" warnings
+          codesign --force --deep --sign - dist/testcontroller_nojoy.app
+          
           cd dist
-          zip -ry ../sdl_testcontroller-macos.zip testcontroller.app
+          zip -ry ../sdl_testcontroller-macos.zip testcontroller.app testcontroller_nojoy.app
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
