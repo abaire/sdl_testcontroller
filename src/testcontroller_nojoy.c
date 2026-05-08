@@ -22,6 +22,8 @@
 #include <emscripten/emscripten.h>
 #endif
 
+#include <stdio.h>
+
 #include "gamepadutils.h"
 #include "testutils.h"
 
@@ -2509,26 +2511,6 @@ SDL_AppResult SDLCALL SDL_AppInit(void **appstate, int argc, char *argv[])
     //     SDL_free(mappings);
     // }
 
-    /* Create a window to display gamepad state */
-    content_scale = SDL_GetDisplayContentScale(SDL_GetPrimaryDisplay());
-    if (content_scale == 0.0f) {
-        content_scale = 1.0f;
-    }
-    screen_width = (int)SDL_ceilf(SCREEN_WIDTH * content_scale);
-    screen_height = (int)SDL_ceilf(SCREEN_HEIGHT * content_scale);
-    window = SDL_CreateWindow("SDL Controller Test", screen_width, screen_height, SDL_WINDOW_HIGH_PIXEL_DENSITY);
-    if (!window) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create window: %s", SDL_GetError());
-        return SDL_APP_FAILURE;
-    }
-
-    screen = SDL_CreateRenderer(window, NULL);
-    if (!screen) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create renderer: %s", SDL_GetError());
-        SDL_DestroyWindow(window);
-        return SDL_APP_FAILURE;
-    }
-
     SDL_hid_device_info *devs = SDL_hid_enumerate(0, 0);
     {
         SDL_hid_device_info *cur_dev = devs;
@@ -2554,6 +2536,27 @@ SDL_AppResult SDLCALL SDL_AppInit(void **appstate, int argc, char *argv[])
 
     if (!SDL_InitSubSystem(SDL_INIT_GAMEPAD)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
+        return SDL_APP_FAILURE;
+    }
+
+
+    /* Create a window to display gamepad state */
+    content_scale = SDL_GetDisplayContentScale(SDL_GetPrimaryDisplay());
+    if (content_scale == 0.0f) {
+        content_scale = 1.0f;
+    }
+    screen_width = (int)SDL_ceilf(SCREEN_WIDTH * content_scale);
+    screen_height = (int)SDL_ceilf(SCREEN_HEIGHT * content_scale);
+    window = SDL_CreateWindow("SDL Controller Test", screen_width, screen_height, SDL_WINDOW_HIGH_PIXEL_DENSITY);
+    if (!window) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create window: %s", SDL_GetError());
+        return SDL_APP_FAILURE;
+    }
+
+    screen = SDL_CreateRenderer(window, NULL);
+    if (!screen) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create renderer: %s", SDL_GetError());
+        SDL_DestroyWindow(window);
         return SDL_APP_FAILURE;
     }
 
