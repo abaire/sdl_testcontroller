@@ -2497,17 +2497,17 @@ SDL_AppResult SDLCALL SDL_AppInit(void **appstate, int argc, char *argv[])
 
     //SDL_AddGamepadMappingsFromFile("gamecontrollerdb.txt");
 
-    if (show_mappings) {
-        int count = 0;
-        char **mappings = SDL_GetGamepadMappings(&count);
-        int map_i;
-        SDL_Log("Supported mappings:");
-        for (map_i = 0; map_i < count; ++map_i) {
-            SDL_Log("\t%s", mappings[map_i]);
-        }
-        SDL_Log("%s", "");
-        SDL_free(mappings);
-    }
+    // if (show_mappings) {
+    //     int count = 0;
+    //     char **mappings = SDL_GetGamepadMappings(&count);
+    //     int map_i;
+    //     SDL_Log("Supported mappings:");
+    //     for (map_i = 0; map_i < count; ++map_i) {
+    //         SDL_Log("\t%s", mappings[map_i]);
+    //     }
+    //     SDL_Log("%s", "");
+    //     SDL_free(mappings);
+    // }
 
     /* Create a window to display gamepad state */
     content_scale = SDL_GetDisplayContentScale(SDL_GetPrimaryDisplay());
@@ -2529,6 +2529,11 @@ SDL_AppResult SDLCALL SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     }
 
+    if (!SDL_InitSubSystem(SDL_INIT_GAMEPAD)) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
+        return SDL_APP_FAILURE;
+    }
+
     SDL_SetRenderDrawColor(screen, 0x00, 0x00, 0x00, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(screen);
     SDL_RenderPresent(screen);
@@ -2536,7 +2541,6 @@ SDL_AppResult SDLCALL SDL_AppInit(void **appstate, int argc, char *argv[])
     /* scale for platforms that don't give you the window size you asked for. */
     SDL_SetRenderLogicalPresentation(screen, (int)SCREEN_WIDTH, (int)SCREEN_HEIGHT,
                                      SDL_LOGICAL_PRESENTATION_LETTERBOX);
-
 
     title_area.w = GAMEPAD_WIDTH;
     title_area.h = FONT_CHARACTER_SIZE + 2 * BUTTON_MARGIN;
@@ -2629,11 +2633,6 @@ SDL_AppResult SDLCALL SDL_AppInit(void **appstate, int argc, char *argv[])
     area.x = SCREEN_WIDTH / 2 - area.w / 2;
     area.y = SCREEN_HEIGHT - BUTTON_MARGIN - area.h;
     SetGamepadButtonArea(done_mapping_button, &area);
-
-    if (!SDL_InitSubSystem(SDL_INIT_GAMEPAD)) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
-        return SDL_APP_FAILURE;
-    }
 
     /* Process the initial gamepad list */
     SDL_AppIterate(NULL);
