@@ -2457,45 +2457,40 @@ SDL_AppResult SDLCALL SDL_AppInit(void **appstate, int argc, char *argv[])
     /* Enable input debug logging */
     SDL_SetLogPriority(SDL_LOG_CATEGORY_INPUT, SDL_LOG_PRIORITY_DEBUG);
 
-    /* Parse commandline */
-    for (i = 1; i < argc;) {
-        int consumed;
-
-        consumed = SDLTest_CommonArg(state, i);
-        if (!consumed) {
-            if (SDL_strcmp(argv[i], "--mappings") == 0) {
-                show_mappings = true;
-                consumed = 1;
-            } else if (SDL_strcmp(argv[i], "--virtual") == 0) {
-                OpenVirtualGamepad();
-                consumed = 1;
-            } else if (gamepad_index < 0) {
-                char *endptr = NULL;
-                gamepad_index = (int)SDL_strtol(argv[i], &endptr, 0);
-                if (endptr != argv[i] && *endptr == '\0' && gamepad_index >= 0) {
-                    consumed = 1;
-                }
-            }
-        }
-        if (consumed <= 0) {
-            static const char *options[] = { "[--mappings]", "[--virtual]", "[index]", NULL };
-            SDLTest_CommonLogUsage(state, argv[0], options);
-            return SDL_APP_FAILURE;
-        }
-
-        i += consumed;
-    }
-    if (gamepad_index < 0) {
-        gamepad_index = 0;
-    }
+    // /* Parse commandline */
+    // for (i = 1; i < argc;) {
+    //     int consumed;
+    //
+    //     consumed = SDLTest_CommonArg(state, i);
+    //     if (!consumed) {
+    //         if (SDL_strcmp(argv[i], "--mappings") == 0) {
+    //             show_mappings = true;
+    //             consumed = 1;
+    //         } else if (SDL_strcmp(argv[i], "--virtual") == 0) {
+    //             OpenVirtualGamepad();
+    //             consumed = 1;
+    //         } else if (gamepad_index < 0) {
+    //             char *endptr = NULL;
+    //             gamepad_index = (int)SDL_strtol(argv[i], &endptr, 0);
+    //             if (endptr != argv[i] && *endptr == '\0' && gamepad_index >= 0) {
+    //                 consumed = 1;
+    //             }
+    //         }
+    //     }
+    //     if (consumed <= 0) {
+    //         static const char *options[] = { "[--mappings]", "[--virtual]", "[index]", NULL };
+    //         SDLTest_CommonLogUsage(state, argv[0], options);
+    //         return SDL_APP_FAILURE;
+    //     }
+    //
+    //     i += consumed;
+    // }
+    // if (gamepad_index < 0) {
+    //     gamepad_index = 0;
+    // }
 
     /* Initialize SDL (Note: video is required to start event loop) */
     if (!SDL_Init(SDL_INIT_VIDEO)) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
-        return SDL_APP_FAILURE;
-    }
-
-    if (!SDL_InitSubSystem(SDL_INIT_GAMEPAD)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
@@ -2634,6 +2629,11 @@ SDL_AppResult SDLCALL SDL_AppInit(void **appstate, int argc, char *argv[])
     area.x = SCREEN_WIDTH / 2 - area.w / 2;
     area.y = SCREEN_HEIGHT - BUTTON_MARGIN - area.h;
     SetGamepadButtonArea(done_mapping_button, &area);
+
+    if (!SDL_InitSubSystem(SDL_INIT_GAMEPAD)) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
+        return SDL_APP_FAILURE;
+    }
 
     /* Process the initial gamepad list */
     SDL_AppIterate(NULL);
