@@ -2111,6 +2111,7 @@ SDL_AppResult SDLCALL SDL_AppEvent(void *appstate, SDL_Event *event)
         break;
 
     case SDL_EVENT_GAMEPAD_ADDED:
+        AddController(event->gdevice.which, true);
         HandleGamepadAdded(event->gdevice.which, true);
         break;
 
