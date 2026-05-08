@@ -2529,6 +2529,29 @@ SDL_AppResult SDLCALL SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     }
 
+    SDL_hid_device_info *devs = SDL_hid_enumerate(0, 0);
+    {
+        SDL_hid_device_info *cur_dev = devs;
+
+        fprintf(stderr, "--- NOJOY HID Enumeration Start ---\n");
+        while (cur_dev) {
+            fprintf(stderr,
+                    "VID: %04hx PID: %04hx | Path: %s | Mfr: %ls | Prod: %ls\n",
+                    cur_dev->vendor_id, cur_dev->product_id,
+                    cur_dev->path ? cur_dev->path : "N/A",
+                    cur_dev->manufacturer_string ?
+                        cur_dev->manufacturer_string :
+                        L"N/A",
+                    cur_dev->product_string ? cur_dev->product_string : L"N/A");
+            cur_dev = cur_dev->next;
+        }
+        fprintf(stderr, "--- NOJOY HID Enumeration End ---\n");
+
+        if (devs) {
+            SDL_hid_free_enumeration(devs);
+        }
+    }
+
     if (!SDL_InitSubSystem(SDL_INIT_GAMEPAD)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
         return SDL_APP_FAILURE;
