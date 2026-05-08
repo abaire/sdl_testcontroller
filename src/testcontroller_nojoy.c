@@ -2011,11 +2011,11 @@ SDL_AppResult SDLCALL SDL_AppEvent(void *appstate, SDL_Event *event)
 
     switch (event->type) {
     case SDL_EVENT_JOYSTICK_ADDED:
-        AddController(event->jdevice.which, true);
+        // AddController(event->jdevice.which, true);
         break;
 
     case SDL_EVENT_JOYSTICK_REMOVED:
-        DelController(event->jdevice.which);
+        // DelController(event->jdevice.which);
         break;
 
     case SDL_EVENT_JOYSTICK_AXIS_MOTION:
