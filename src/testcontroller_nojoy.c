@@ -2490,7 +2490,12 @@ SDL_AppResult SDLCALL SDL_AppInit(void **appstate, int argc, char *argv[])
     }
 
     /* Initialize SDL (Note: video is required to start event loop) */
-    if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD)) {
+    if (!SDL_Init(SDL_INIT_VIDEO)) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
+        return SDL_APP_FAILURE;
+    }
+
+    if (!SDL_InitSubSystem(SDL_INIT_GAMEPAD)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
